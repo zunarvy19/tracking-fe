@@ -111,7 +111,7 @@ function formatDate(dateStr) {
           </div>
           <div>
             <h3 class="text-lg font-bold">Install App for Offline Mode</h3>
-            <p class="mt-1 max-w-xl text-sm text-blue-100">Add FinanceTracker to your home screen for quick access, push notifications, and full offline capabilities.</p>
+            <p class="mt-1 max-w-xl text-sm text-blue-100">Add CuanTrack to your home screen for quick access, push notifications, and full offline capabilities.</p>
           </div>
         </div>
         <button class="shrink-0 whitespace-nowrap rounded-lg bg-white px-5 py-2.5 text-sm font-bold text-blue-600 shadow hover:bg-blue-50 transition-colors">
@@ -147,7 +147,7 @@ function formatDate(dateStr) {
     <div class="rounded-xl bg-surface-light shadow-sm ring-1 ring-border-light dark:bg-surface-dark dark:ring-border-dark">
       <div class="flex items-center justify-between border-b border-border-light px-6 py-4 dark:border-border-dark">
         <h3 class="font-bold text-text-primary-light dark:text-text-primary-dark">Recent Transactions</h3>
-        <a class="text-sm font-medium text-primary hover:text-primary-hover hover:underline dark:text-blue-400" href="#">View All</a>
+        <!-- <a class="text-sm font-medium text-primary hover:text-primary-hover hover:underline dark:text-blue-400 cursor-pointer" href="">View All</a> -->
       </div>
       <div class="divide-y divide-border-light dark:divide-border-dark">
         <template v-if="txLoading">

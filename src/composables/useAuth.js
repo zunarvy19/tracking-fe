@@ -1,8 +1,11 @@
 import { computed } from "vue";
+import { useQueryClient } from "@tanstack/vue-query";
+import localforage from "localforage";
 import { authClient } from "../lib/auth-client.js";
 
 export function useAuth() {
   const session = authClient.useSession();
+  const queryClient = useQueryClient();
 
   const isAuthenticated = computed(() => !!session.value?.data?.user);
   const user = computed(() => session.value?.data?.user || null);
@@ -28,7 +31,10 @@ export function useAuth() {
 
   async function signOut() {
     try {
-      return await authClient.signOut();
+      await authClient.signOut();
+      // Clear all cached data to prevent stale user data on next login
+      queryClient.clear();
+      await localforage.clear();
     } catch (e) {
       return { error: { message: e.message || "Sign out failed" } };
     }

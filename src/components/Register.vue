@@ -38,6 +38,8 @@ async function handleRegister() {
     const result = await signUp(email.value, password.value, name.value)
     if (result.error) {
       error.value = result.error.message || 'Registration failed. Please try again.'
+    } else {
+      window.location.reload()
     }
   } catch (e) {
     error.value = e.message || 'Something went wrong. Please try again.'

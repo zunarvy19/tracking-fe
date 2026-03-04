@@ -9,8 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/query-async-storage-persister": "^5.90.24",
     "@tanstack/vue-query": "^5.75.0",
     "better-auth": "^1.2.0",
+    "localforage": "^1.10.0",
     "vue": "^3.5.25"
   },
   "devDependencies": {

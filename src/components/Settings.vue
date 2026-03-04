@@ -2,9 +2,21 @@
 import { ref, computed } from 'vue'
 import { useUser } from '../composables/useUser.js'
 import { useAuth } from '../composables/useAuth.js'
+import { useStorage } from '../composables/useStorage.js'
+import CategorySettings from './CategorySettings.vue'
 
 const { profile, isLoading, updateProfile, isUpdating, deleteAccount, isDeleting } = useUser()
 const { user } = useAuth()
+const {
+  storageUsage,
+  cacheEntries,
+  cacheSize,
+  isOnline,
+  timeAgo,
+  isSyncing,
+  forceSyncAll,
+  clearCache,
+} = useStorage()
 
 const displayName = ref('')
 const defaultCurrency = ref('IDR')
@@ -41,7 +53,7 @@ function handleDeleteAccount() {
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div class="flex flex-col gap-1">
           <h1 class="text-text-primary-light dark:text-white text-3xl md:text-4xl font-extrabold tracking-tight">Settings &amp; Management</h1>
-          <p class="text-text-secondary-light dark:text-slate-400 text-base">Manage your account preferences, local storage, and sync status.</p>
+          <p class="text-text-secondary-light dark:text-slate-400 text-base">Manage your account preferences, and sync status.</p>
         </div>
       </div>
       
@@ -75,7 +87,7 @@ function handleDeleteAccount() {
                 <div class="h-24 w-24 rounded-full bg-primary flex items-center justify-center shadow-md ring-4 ring-white dark:ring-slate-800">
                   <span class="text-white text-3xl font-bold">{{ (profileData?.name || 'U')[0].toUpperCase() }}</span>
                 </div>
-                <button aria-label="Edit photo" class="absolute bottom-0 right-0 p-1.5 bg-primary text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors">
+                <button aria-label="Edit photo" class="absolute bottom-0 right-0 p-1.5 bg-primary text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors hidden">
                   <span class="material-symbols-outlined text-[18px]">edit</span>
                 </button>
               </div>
@@ -116,11 +128,22 @@ function handleDeleteAccount() {
         </section>
         
         <!-- Storage & Sync Section -->
-        <section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-subtle border border-border-light dark:border-border-dark overflow-hidden">
+        <section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-subtle border border-border-light dark:border-border-dark overflow-hidden hidden">
           <div class="px-6 py-5 border-b border-border-light dark:border-border-dark flex justify-between items-center">
             <div class="flex items-center gap-3">
               <h2 class="text-lg font-bold text-text-primary-light dark:text-white">Data &amp; Storage</h2>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 uppercase tracking-wide">Beta</span>
+              <span :class="[
+                'px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1',
+                isOnline
+                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                  : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+              ]">
+                <span :class="[
+                  'w-1.5 h-1.5 rounded-full',
+                  isOnline ? 'bg-green-500 animate-pulse' : 'bg-red-500'
+                ]"></span>
+                {{ isOnline ? 'Online' : 'Offline' }}
+              </span>
             </div>
           </div>
           
@@ -129,14 +152,28 @@ function handleDeleteAccount() {
               <div class="space-y-3">
                 <div class="flex justify-between items-end">
                   <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300">Local Storage Usage (IndexedDB)</h3>
-                  <span class="text-xs font-medium text-text-secondary-light dark:text-slate-400">Connected to cloud</span>
+                  <span class="text-xs font-medium text-text-secondary-light dark:text-slate-400">{{ cacheEntries }} cached entries · {{ cacheSize }}</span>
                 </div>
                 <div class="h-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
-                  <div class="h-full bg-primary w-[15%]" title="Transactions"></div>
-                  <div class="h-full bg-indigo-400 w-[8%]" title="Images"></div>
-                  <div class="h-full bg-emerald-400 w-[5%]" title="Cache"></div>
+                  <div
+                    class="h-full bg-primary transition-all duration-500"
+                    :style="{ width: Math.min(storageUsage.percent, 100) + '%' }"
+                    title="Used Storage"
+                  ></div>
+                </div>
+                <div class="flex justify-between text-xs text-text-secondary-light dark:text-slate-400">
+                  <span>{{ storageUsage.percent }}% used</span>
+                  <span>{{ cacheSize }} used</span>
                 </div>
               </div>
+              
+              <!-- Clear Cache -->
+              <button @click="clearCache" class="px-4 py-2 border border-border-light dark:border-border-dark text-slate-600 dark:text-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] transition-all">
+                <span class="inline-flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[18px]">delete_sweep</span>
+                  Clear Local Cache
+                </span>
+              </button>
             </div>
             
             <!-- Sync Status Card -->
@@ -144,23 +181,41 @@ function handleDeleteAccount() {
               <div class="bg-gradient-to-b from-slate-50 to-white dark:from-slate-800 dark:to-slate-800/50 rounded-xl p-5 border border-border-light dark:border-border-dark shadow-sm h-full flex flex-col">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="font-bold text-text-primary-light dark:text-white">Cloud Sync</h3>
-                  <span class="material-symbols-outlined text-green-500">cloud_done</span>
+                  <span :class="['material-symbols-outlined', isOnline ? 'text-green-500' : 'text-slate-400']">
+                    {{ isOnline ? 'cloud_done' : 'cloud_off' }}
+                  </span>
                 </div>
                 <div class="flex-1 flex flex-col justify-center items-center text-center space-y-2 py-4">
-                  <div class="w-16 h-16 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center mb-1">
-                    <span class="material-symbols-outlined text-3xl text-green-500">check_circle</span>
+                  <div :class="[
+                    'w-16 h-16 rounded-full flex items-center justify-center mb-1',
+                    isOnline ? 'bg-green-50 dark:bg-green-900/20' : 'bg-slate-100 dark:bg-slate-700'
+                  ]">
+                    <span :class="[
+                      'material-symbols-outlined text-3xl',
+                      isOnline ? 'text-green-500' : 'text-slate-400'
+                    ]">{{ isOnline ? 'check_circle' : 'cloud_off' }}</span>
                   </div>
-                  <p class="text-sm font-medium text-text-primary-light dark:text-white">Everything is up to date</p>
-                  <p class="text-xs text-text-secondary-light dark:text-slate-400">Last synced: Just now</p>
+                  <p class="text-sm font-medium text-text-primary-light dark:text-white">
+                    {{ isOnline ? 'Connected to server' : 'You are offline' }}
+                  </p>
+                  <p class="text-xs text-text-secondary-light dark:text-slate-400">Last synced: {{ timeAgo }}</p>
                 </div>
-                <button class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-700 border border-border-light dark:border-border-dark text-slate-700 dark:text-slate-200 rounded-lg text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600 active:scale-[0.98] transition-all mt-auto group">
-                  <span class="material-symbols-outlined text-[20px] group-hover:animate-spin">sync</span>
-                  Force Sync
+                <button
+                  @click="forceSyncAll"
+                  :disabled="isSyncing || !isOnline"
+                  class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-700 border border-border-light dark:border-border-dark text-slate-700 dark:text-slate-200 rounded-lg text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600 active:scale-[0.98] transition-all mt-auto group disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span :class="['material-symbols-outlined text-[20px]', isSyncing ? 'animate-spin' : 'group-hover:animate-spin']">sync</span>
+                  {{ isSyncing ? 'Syncing...' : 'Force Sync' }}
                 </button>
               </div>
             </div>
           </div>
         </section>
+        
+        <!-- Category Settings -->
+         <!-- only admin can see this -->
+        <CategorySettings v-if="user?.role === 'superadmin'" />
         
         <!-- Danger Zone -->
         <section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-subtle border border-red-200 dark:border-red-900/30 overflow-hidden">

@@ -7,12 +7,19 @@ const props = defineProps({
   isOpen: {
     type: Boolean,
     default: false
+  },
+  initialData: {
+    type: Object,
+    default: null
   }
 })
 const emit = defineEmits(['close'])
 
-const { createTransactionAsync, isCreating } = useTransactions()
+const { createTransactionAsync, updateTransactionAsync, isCreating, isUpdating } = useTransactions()
 const { categories } = useCategories()
+
+const isEditing = computed(() => !!props.initialData)
+const isSaving = computed(() => isCreating.value || isUpdating.value)
 
 const expenseCategories = computed(() => {
   return (categories.value || []).filter(c => c.type === 'expense' || c.type === 'both')
@@ -39,22 +46,44 @@ function resetForm() {
   transactionType.value = 'expense'
 }
 
+import { watch } from 'vue'
+
+watch(() => props.isOpen, (newVal) => {
+  if (newVal) {
+    if (props.initialData) {
+      transactionType.value = props.initialData.type || 'expense'
+      amount.value = props.initialData.amount || ''
+      selectedCategoryId.value = props.initialData.categoryId || props.initialData.category?.id || ''
+      notes.value = props.initialData.notes || ''
+      transactionDate.value = props.initialData.date ? new Date(props.initialData.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+    } else {
+      resetForm()
+    }
+  }
+})
+
 async function handleSubmit() {
   if (!amount.value || !selectedCategoryId.value) return
   
   try {
-    await createTransactionAsync({
+    const payload = {
       type: transactionType.value,
       amount: amount.value,
       categoryId: selectedCategoryId.value,
       description: availableCategories.value.find(c => c.id === selectedCategoryId.value)?.name || 'Transaction',
       notes: notes.value,
       date: transactionDate.value,
-    })
+    }
+
+    if (isEditing.value) {
+      await updateTransactionAsync({ id: props.initialData.id, data: payload })
+    } else {
+      await createTransactionAsync(payload)
+    }
     resetForm()
     emit('close')
   } catch (e) {
-    console.error('Failed to create transaction:', e)
+    console.error('Failed to save transaction:', e)
   }
 }
 </script>
@@ -76,7 +105,7 @@ async function handleSubmit() {
         <header class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-4 bg-white dark:bg-slate-900 sticky top-0 z-10">
             <div class="flex items-center gap-3 text-slate-900 dark:text-white">
                 <span class="material-symbols-outlined text-primary">account_balance_wallet</span>
-                <h2 class="text-lg font-bold leading-tight">Add Transaction</h2>
+                <h2 class="text-lg font-bold leading-tight">{{ isEditing ? 'Edit Transaction' : 'Add Transaction' }}</h2>
             </div>
             <button @click="$emit('close')" class="flex items-center justify-center size-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors">
                 <span class="material-symbols-outlined">close</span>
@@ -155,9 +184,9 @@ async function handleSubmit() {
         
         <!-- Footer / Action Button -->
         <footer class="p-6 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
-            <button @click="handleSubmit" :disabled="isCreating || !amount || !selectedCategoryId" class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-bold rounded-lg shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed">
-                <span class="material-symbols-outlined" :class="isCreating ? 'animate-spin' : 'group-hover:animate-pulse'">{{ isCreating ? 'sync' : 'check_circle' }}</span>
-                {{ isCreating ? 'Saving...' : 'Save Transaction' }}
+            <button @click="handleSubmit" :disabled="isSaving || !amount || !selectedCategoryId" class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-bold rounded-lg shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed">
+                <span class="material-symbols-outlined" :class="isSaving ? 'animate-spin' : 'group-hover:animate-pulse'">{{ isSaving ? 'sync' : 'check_circle' }}</span>
+                {{ isSaving ? 'Saving...' : (isEditing ? 'Save Changes' : 'Save Transaction') }}
             </button>
         </footer>
       </div>

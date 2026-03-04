@@ -4,6 +4,7 @@ import AddTransactionModal from './AddTransactionModal.vue'
 import { useTransactions, useExportTransactionsCsv } from '../composables/useTransactions.js'
 
 const isTransactionModalOpen = ref(false)
+const selectedTransaction = ref(null)
 
 const filters = reactive({
   page: 1,
@@ -34,7 +35,7 @@ watch(periodFilter, (val) => {
   }
 }, { immediate: true })
 
-const { transactions: txData, isLoading } = useTransactions(filters)
+const { transactions: txData, isLoading, deleteTransactionAsync } = useTransactions(filters)
 const exportCsv = useExportTransactionsCsv()
 
 const transactionList = computed(() => txData.value?.data || [])
@@ -42,6 +43,31 @@ const pagination = computed(() => txData.value?.pagination || { page: 1, total: 
 
 function goToPage(p) {
   filters.page = p
+}
+
+function openAddModal() {
+  selectedTransaction.value = null
+  isTransactionModalOpen.value = true
+}
+
+function openEditModal(tx) {
+  selectedTransaction.value = tx
+  isTransactionModalOpen.value = true
+}
+
+function closeTransactionModal() {
+  isTransactionModalOpen.value = false
+  setTimeout(() => { selectedTransaction.value = null }, 200)
+}
+
+async function handleDelete(id) {
+  if (confirm('Are you sure you want to delete this transaction?')) {
+    try {
+      await deleteTransactionAsync(id)
+    } catch (e) {
+      console.error('Failed to delete transaction:', e)
+    }
+  }
 }
 
 function getCategoryIcon(tx) {
@@ -112,7 +138,7 @@ async function handleExportCsv() {
             <span class="material-symbols-outlined text-[20px]">file_download</span>
             <span class="hidden sm:inline">Export CSV</span>
           </button>
-          <button @click="isTransactionModalOpen = true" class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-slate-900">
+          <button @click="openAddModal" class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-slate-900">
             <span class="material-symbols-outlined text-[20px]">add</span>
             <span class="hidden sm:inline">Add Transaction</span>
           </button>
@@ -154,10 +180,11 @@ async function handleExportCsv() {
           <!-- Table Header -->
           <div class="hidden grid-cols-12 gap-4 bg-slate-50 px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:bg-slate-800/50 dark:text-slate-400 lg:grid">
             <div class="col-span-2">Date</div>
-            <div class="col-span-4">Description</div>
+            <div class="col-span-3">Description</div>
             <div class="col-span-2">Category</div>
             <div class="col-span-2">Status</div>
             <div class="col-span-2 text-right">Amount</div>
+            <div class="col-span-1 text-center">Actions</div>
           </div>
           
           <!-- Loading -->
@@ -178,7 +205,7 @@ async function handleExportCsv() {
               <div class="flex items-center justify-between lg:col-span-2 lg:block">
                 <span class="text-sm font-medium text-slate-900 dark:text-slate-200">{{ formatDate(tx.date) }}</span>
               </div>
-              <div class="lg:col-span-4">
+              <div class="lg:col-span-3">
                 <div class="flex items-center gap-3">
                   <div :class="['flex h-10 w-10 shrink-0 items-center justify-center rounded-full', getCategoryColor(tx).bg, getCategoryColor(tx).text]">
                     <span class="material-symbols-outlined">{{ getCategoryIcon(tx) }}</span>
@@ -204,6 +231,14 @@ async function handleExportCsv() {
               <div class="flex items-center justify-between lg:col-span-2 lg:justify-end">
                 <span class="lg:hidden text-sm text-slate-500">Amount</span>
                 <span :class="['text-sm font-bold', amountClass(tx)]">{{ formatAmount(tx) }}</span>
+              </div>
+              <div class="flex items-center justify-end lg:col-span-1 lg:justify-center gap-2">
+                <button @click="openEditModal(tx)" class="text-slate-400 hover:text-primary dark:text-slate-500 dark:hover:text-primary transition-colors" title="Edit">
+                  <span class="material-symbols-outlined text-[20px]">edit</span>
+                </button>
+                <button @click="handleDelete(tx.id)" class="text-slate-400 hover:text-red-600 dark:text-slate-500 dark:hover:text-red-500 transition-colors" title="Delete">
+                  <span class="material-symbols-outlined text-[20px]">delete</span>
+                </button>
               </div>
             </div>
             
@@ -242,7 +277,8 @@ async function handleExportCsv() {
     
     <AddTransactionModal 
       :isOpen="isTransactionModalOpen" 
-      @close="isTransactionModalOpen = false" 
+      :initialData="selectedTransaction"
+      @close="closeTransactionModal" 
     />
   </div>
 </template>

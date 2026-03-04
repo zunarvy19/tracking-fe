@@ -25,7 +25,7 @@ async function handleSignOut() {
         <span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
       </div>
       <div>
-        <h1 class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">FinanceTracker</h1>
+        <h1 class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">CuanTrack</h1>
         <p class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">v2.1.0</p>
       </div>
     </div>
@@ -68,10 +68,10 @@ async function handleSignOut() {
           <span :class="['material-symbols-outlined', currentView === 'settings' ? 'fill-1' : '']">settings</span>
           <span :class="currentView === 'settings' ? 'font-semibold' : 'font-medium'">Settings</span>
         </a>
-        <a class="group flex items-center gap-3 rounded-lg px-4 py-3 text-text-secondary-light hover:bg-slate-100 hover:text-text-primary-light dark:text-text-secondary-dark dark:hover:bg-slate-800 dark:hover:text-text-primary-dark transition-all cursor-pointer mt-1" href="#">
+        <!-- <a class="group flex items-center gap-3 rounded-lg px-4 py-3 text-text-secondary-light hover:bg-slate-100 hover:text-text-primary-light dark:text-text-secondary-dark dark:hover:bg-slate-800 dark:hover:text-text-primary-dark transition-all cursor-pointer mt-1" href="#">
           <span class="material-symbols-outlined group-hover:text-primary transition-colors">help</span>
           <span class="font-medium">Support</span>
-        </a>
+        </a> -->
       </div>
     </nav>
     <!-- User Profile Snippet -->

@@ -25,6 +25,8 @@ async function handleLogin() {
     const result = await signIn(email.value, password.value)
     if (result.error) {
       error.value = result.error.message || 'Invalid email or password'
+    } else {
+      window.location.reload()
     }
   } catch (e) {
     error.value = e.message || 'Something went wrong. Please try again.'
@@ -48,7 +50,7 @@ async function handleLogin() {
           <span class="material-symbols-outlined text-3xl">account_balance_wallet</span>
         </div>
         <h1 class="text-3xl font-extrabold text-text-primary-light dark:text-text-primary-dark tracking-tight">Welcome back</h1>
-        <p class="text-text-secondary-light dark:text-text-secondary-dark mt-2 text-sm font-medium">Sign in to your FinanceTracker account</p>
+        <p class="text-text-secondary-light dark:text-text-secondary-dark mt-2 text-sm font-medium">Sign in to your CuanTrack account</p>
       </div>
 
       <!-- Card -->
