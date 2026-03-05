@@ -104,7 +104,7 @@ function formatDate(dateStr) {
     </div>
 
     <!-- A2HS Banner -->
-    <div v-if="isInstallable" class="relative flex overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white shadow-lg">
+    <div v-if="isInstallable" class="relative flex overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white shadow-lg hidden">
       <div class="bg-pattern absolute inset-0 opacity-10" data-alt="Abstract dotted background pattern" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;"></div>
       <div class="relative z-10 flex w-full flex-col justify-between gap-6 md:flex-row md:items-center">
         <div class="flex items-start gap-4">

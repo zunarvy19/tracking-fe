@@ -41,6 +41,7 @@ export function useBudgets() {
     isCreating: createMutation.isPending,
 
     updateBudget: updateMutation.mutate,
+    updateBudgetAsync: updateMutation.mutateAsync,
     isUpdating: updateMutation.isPending,
 
     deleteBudget: deleteMutation.mutate,

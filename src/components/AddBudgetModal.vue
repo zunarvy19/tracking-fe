@@ -3,45 +3,89 @@ import { ref, computed } from 'vue'
 import { useBudgets } from '../composables/useBudgets.js'
 import { useCategories } from '../composables/useCategories.js'
 
-defineProps({
+const props = defineProps({
   isOpen: {
     type: Boolean,
     default: false
+  },
+  initialData: {
+    type: Object,
+    default: null
   }
 })
 
 const emit = defineEmits(['close'])
 
-const { createBudgetAsync, isCreating } = useBudgets()
+const { createBudgetAsync, updateBudgetAsync, isCreating, isUpdating } = useBudgets()
 const { categories } = useCategories()
+
+const isSaving = computed(() => isCreating.value || isUpdating.value)
+const isEditing = computed(() => !!props.initialData)
 
 const expenseCategories = computed(() => {
   return (categories.value || []).filter(c => c.type === 'expense' || c.type === 'both')
 })
 
-const budgetAmount = ref('')
+const rawAmount = ref('')
+const displayAmount = ref('')
 const selectedCategoryId = ref('')
 const period = ref('monthly')
 
 function resetForm() {
-  budgetAmount.value = ''
+  rawAmount.value = ''
+  displayAmount.value = ''
   selectedCategoryId.value = ''
   period.value = 'monthly'
 }
 
+import { watch } from 'vue'
+
+watch(() => props.isOpen, (newVal) => {
+  if (newVal) {
+    if (props.initialData) {
+      rawAmount.value = props.initialData.amount || ''
+      displayAmount.value = formatNumber(rawAmount.value)
+      selectedCategoryId.value = props.initialData.categoryId || props.initialData.category?.id || ''
+      period.value = props.initialData.period || 'monthly'
+    } else {
+      resetForm()
+    }
+  }
+})
+
+function formatNumber(value) {
+  if (!value) return ''
+  return new Intl.NumberFormat('id-ID').format(value)
+}
+
+function handleAmountInput(e) {
+  // Remove all non-digit characters (including manually typed dots)
+  const cleanValue = e.target.value.replace(/\D/g, '')
+  rawAmount.value = cleanValue
+  displayAmount.value = formatNumber(cleanValue)
+  // Sync back to input to handle manual dot/non-digit input
+  e.target.value = displayAmount.value
+}
+
 async function handleSubmit() {
-  if (!budgetAmount.value || !selectedCategoryId.value) return
+  if (!rawAmount.value || !selectedCategoryId.value) return
   
   try {
-    await createBudgetAsync({
+    const payload = {
       categoryId: selectedCategoryId.value,
-      amount: budgetAmount.value,
+      amount: rawAmount.value,
       period: period.value,
-    })
+    }
+
+    if (isEditing.value) {
+      await updateBudgetAsync({ id: props.initialData.id, data: payload })
+    } else {
+      await createBudgetAsync(payload)
+    }
     resetForm()
     emit('close')
   } catch (e) {
-    console.error('Failed to create budget:', e)
+    console.error('Failed to save budget:', e)
   }
 }
 </script>
@@ -60,7 +104,7 @@ async function handleSubmit() {
         
         <!-- Header -->
         <div class="flex items-center justify-between px-6 py-5 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark z-10">
-          <h2 class="text-xl font-bold text-text-primary-light dark:text-white">Create New Budget</h2>
+          <h2 class="text-xl font-bold text-text-primary-light dark:text-white">{{ isEditing ? 'Edit Budget' : 'Create New Budget' }}</h2>
           <button 
             @click="$emit('close')" 
             class="text-text-secondary-light hover:text-text-primary-light dark:text-slate-400 dark:hover:text-white transition-colors rounded-full p-1 hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -77,7 +121,7 @@ async function handleSubmit() {
             <label class="text-sm font-medium text-text-secondary-light dark:text-slate-400">Budget Amount</label>
             <div class="relative">
               <span class="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary-light dark:text-slate-500 text-2xl font-semibold">Rp</span>
-              <input v-model="budgetAmount" class="w-full pl-14 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-border-light dark:border-border-dark rounded-lg text-3xl font-bold text-text-primary-light dark:text-white placeholder-slate-300 dark:placeholder-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" placeholder="0" type="number"/>
+              <input :value="displayAmount" @input="handleAmountInput" inputmode="numeric" class="w-full pl-14 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-border-light dark:border-border-dark rounded-lg text-3xl font-bold text-text-primary-light dark:text-white placeholder-slate-300 dark:placeholder-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" placeholder="0" type="text"/>
             </div>
           </div>
           
@@ -117,9 +161,9 @@ async function handleSubmit() {
           >
             Cancel
           </button>
-          <button @click="handleSubmit" :disabled="isCreating || !budgetAmount || !selectedCategoryId" class="px-5 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-hover shadow-sm shadow-primary/20 flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-            <span class="material-symbols-outlined text-[18px]" :class="isCreating ? 'animate-spin' : ''">{{ isCreating ? 'sync' : 'check' }}</span>
-            {{ isCreating ? 'Saving...' : 'Save Budget' }}
+          <button @click="handleSubmit" :disabled="isSaving || !rawAmount || !selectedCategoryId" class="px-5 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-hover shadow-sm shadow-primary/20 flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            <span class="material-symbols-outlined text-[18px]" :class="isSaving ? 'animate-spin' : ''">{{ isSaving ? 'sync' : 'check' }}</span>
+            {{ isSaving ? 'Saving...' : (isEditing ? 'Save Changes' : 'Save Budget') }}
           </button>
         </div>
         

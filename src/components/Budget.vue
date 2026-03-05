@@ -4,11 +4,39 @@ import AddBudgetModal from './AddBudgetModal.vue'
 import { useBudgets, useBudgetSummary } from '../composables/useBudgets.js'
 
 const isBudgetModalOpen = ref(false)
+const editingBudget = ref(null)
 
-const { budgets, isLoading } = useBudgets()
+const { budgets, isLoading, deleteBudget } = useBudgets()
 const { data: summary, isLoading: summaryLoading } = useBudgetSummary()
 
 const budgetList = computed(() => budgets.value || [])
+const activeDropdownId = ref(null)
+
+function toggleDropdown(id) {
+  activeDropdownId.value = activeDropdownId.value === id ? null : id
+}
+
+function closeDropdowns() {
+  activeDropdownId.value = null
+}
+
+function handleEdit(budget) {
+  editingBudget.value = budget
+  isBudgetModalOpen.value = true
+  closeDropdowns()
+}
+
+function handleDelete(id) {
+  if (confirm('Are you sure you want to remove this budget?')) {
+    deleteBudget(id)
+  }
+  closeDropdowns()
+}
+
+function openCreateModal() {
+  editingBudget.value = null
+  isBudgetModalOpen.value = true
+}
 
 const colorMap = {
   blue: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-primary', bar: 'bg-primary' },
@@ -45,7 +73,7 @@ function formatCurrency(val) {
           <h1 class="text-text-primary-light dark:text-white text-3xl md:text-4xl font-extrabold tracking-tight">Budget Management</h1>
           <p class="text-text-secondary-light dark:text-slate-400 text-base">Track your monthly spending limits</p>
         </div>
-        <button @click="isBudgetModalOpen = true" class="flex items-center gap-2 bg-primary hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition-all active:scale-95">
+        <button @click="openCreateModal" class="flex items-center gap-2 bg-primary hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition-all active:scale-95">
           <span class="material-symbols-outlined text-[20px]">add_circle</span>
           <span class="font-semibold text-sm">Add Budget</span>
         </button>
@@ -138,9 +166,21 @@ function formatCurrency(val) {
                   <p class="text-xs text-text-secondary-light">{{ b.category?.description }}</p>
                 </div>
               </div>
-              <button class="text-text-secondary-light hover:text-primary transition-colors">
-                <span class="material-symbols-outlined">more_vert</span>
-              </button>
+              <div class="relative">
+                <button @click.prevent="toggleDropdown(b.id)" @blur="setTimeout(() => closeDropdowns(), 150)" class="text-text-secondary-light hover:text-primary transition-colors focus:outline-none">
+                  <span class="material-symbols-outlined">more_vert</span>
+                </button>
+                <div v-show="activeDropdownId === b.id" class="absolute right-0 top-6 w-36 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-border-light dark:border-border-dark py-1 z-10">
+                  <button @click="handleEdit(b)" class="w-full text-left px-4 py-2 text-sm text-text-primary-light dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                    Edit
+                  </button>
+                  <button @click="handleDelete(b.id)" class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[16px]">delete</span>
+                    Delete
+                  </button>
+                </div>
+              </div>
             </div>
             <div class="flex justify-between items-end mb-2">
               <span class="text-2xl font-bold text-text-primary-light dark:text-white">{{ formatCurrency(b.spent) }} <span class="text-sm font-normal text-text-secondary-light">/ {{ formatCurrency(b.amount) }}</span></span>
@@ -158,15 +198,17 @@ function formatCurrency(val) {
           </div>
         </div>
         
-        <button @click="isBudgetModalOpen = true" class="w-full border-2 border-dashed border-border-light dark:border-border-dark rounded-xl p-4 flex items-center justify-center gap-2 text-text-secondary-light hover:text-primary hover:border-primary hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group">
+        
+        <button @click="openCreateModal" class="w-full border-2 border-dashed border-border-light dark:border-border-dark rounded-xl p-4 flex items-center justify-center gap-2 text-text-secondary-light hover:text-primary hover:border-primary hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group">
           <span class="material-symbols-outlined group-hover:scale-110 transition-transform">add</span>
-          <span class="font-medium">Create New Category</span>
+          <span class="font-medium">Create New Budget</span>
         </button>
       </div>
     </div>
     
     <AddBudgetModal 
       :isOpen="isBudgetModalOpen" 
+      :initialData="editingBudget"
       @close="isBudgetModalOpen = false" 
     />
   </div>

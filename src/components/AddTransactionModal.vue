@@ -29,7 +29,8 @@ const incomeCategories = computed(() => {
 })
 
 const transactionType = ref('expense')
-const amount = ref('')
+const rawAmount = ref('')
+const displayAmount = ref('')
 const selectedCategoryId = ref('')
 const notes = ref('')
 const transactionDate = ref(new Date().toISOString().split('T')[0])
@@ -39,7 +40,8 @@ const availableCategories = computed(() => {
 })
 
 function resetForm() {
-  amount.value = ''
+  rawAmount.value = ''
+  displayAmount.value = ''
   selectedCategoryId.value = ''
   notes.value = ''
   transactionDate.value = new Date().toISOString().split('T')[0]
@@ -52,7 +54,8 @@ watch(() => props.isOpen, (newVal) => {
   if (newVal) {
     if (props.initialData) {
       transactionType.value = props.initialData.type || 'expense'
-      amount.value = props.initialData.amount || ''
+      rawAmount.value = props.initialData.amount || ''
+      displayAmount.value = formatNumber(rawAmount.value)
       selectedCategoryId.value = props.initialData.categoryId || props.initialData.category?.id || ''
       notes.value = props.initialData.notes || ''
       transactionDate.value = props.initialData.date ? new Date(props.initialData.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
@@ -62,13 +65,27 @@ watch(() => props.isOpen, (newVal) => {
   }
 })
 
+function formatNumber(value) {
+  if (!value) return ''
+  return new Intl.NumberFormat('id-ID').format(value)
+}
+
+function handleAmountInput(e) {
+  // Remove all non-digit characters (including manually typed dots)
+  const cleanValue = e.target.value.replace(/\D/g, '')
+  rawAmount.value = cleanValue
+  displayAmount.value = formatNumber(cleanValue)
+  // Sync back to input to handle manual dot/non-digit input
+  e.target.value = displayAmount.value
+}
+
 async function handleSubmit() {
-  if (!amount.value || !selectedCategoryId.value) return
+  if (!rawAmount.value || !selectedCategoryId.value) return
   
   try {
     const payload = {
       type: transactionType.value,
-      amount: amount.value,
+      amount: rawAmount.value,
       categoryId: selectedCategoryId.value,
       description: availableCategories.value.find(c => c.id === selectedCategoryId.value)?.name || 'Transaction',
       notes: notes.value,
@@ -129,14 +146,14 @@ async function handleSubmit() {
                     </div>
                 </div>
                 
-                <!-- Amount Input -->
+                    <!-- Amount Input -->
                 <div class="flex flex-col items-center gap-2">
                     <label class="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wide">Amount</label>
                     <div class="relative w-full max-w-sm">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <span class="text-slate-400 text-3xl font-bold">Rp</span>
                         </div>
-                        <input v-model="amount" class="block w-full pl-14 pr-4 py-4 text-center text-4xl font-bold text-slate-900 dark:text-white bg-transparent border-b-2 border-slate-200 dark:border-slate-700 focus:border-primary focus:ring-0 placeholder-slate-200 dark:placeholder-slate-700 transition-colors" placeholder="0" type="number"/>
+                        <input :value="displayAmount" @input="handleAmountInput" inputmode="numeric" class="block w-full pl-14 pr-4 py-4 text-center text-4xl font-bold text-slate-900 dark:text-white bg-transparent border-b-2 border-slate-200 dark:border-slate-700 focus:border-primary focus:ring-0 placeholder-slate-200 dark:placeholder-slate-700 transition-colors" placeholder="0" type="text"/>
                     </div>
                 </div>
                 
@@ -184,7 +201,7 @@ async function handleSubmit() {
         
         <!-- Footer / Action Button -->
         <footer class="p-6 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
-            <button @click="handleSubmit" :disabled="isSaving || !amount || !selectedCategoryId" class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-bold rounded-lg shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed">
+            <button @click="handleSubmit" :disabled="isSaving || !rawAmount || !selectedCategoryId" class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-bold rounded-lg shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed">
                 <span class="material-symbols-outlined" :class="isSaving ? 'animate-spin' : 'group-hover:animate-pulse'">{{ isSaving ? 'sync' : 'check_circle' }}</span>
                 {{ isSaving ? 'Saving...' : (isEditing ? 'Save Changes' : 'Save Transaction') }}
             </button>

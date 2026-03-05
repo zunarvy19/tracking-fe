@@ -16,6 +16,12 @@ const { isAuthenticated, isLoading } = useAuth()
 
 const currentView = ref('dashboard')
 const authView = ref('login') // 'login' or 'register'
+const isMobileMenuOpen = ref(false)
+
+function handleNavigate(view) {
+  currentView.value = view
+  isMobileMenuOpen.value = false
+}
 </script>
 
 <template>
@@ -38,9 +44,9 @@ const authView = ref('login') // 'login' or 'register'
 
   <!-- Main app (authenticated) -->
   <div v-else class="flex min-h-screen w-full overflow-hidden">
-    <Sidebar :currentView="currentView" @navigate="currentView = $event" />
+    <Sidebar :currentView="currentView" :isMobileOpen="isMobileMenuOpen" @navigate="handleNavigate" @close="isMobileMenuOpen = false" />
     <main class="flex h-screen flex-1 flex-col overflow-y-auto bg-background-light dark:bg-background-dark relative">
-      <MobileHeader :currentView="currentView" />
+      <MobileHeader :currentView="currentView" @toggle-menu="isMobileMenuOpen = !isMobileMenuOpen" />
       <Dashboard v-if="currentView === 'dashboard'" />
       <Transactions v-else-if="currentView === 'transactions'" />
       <Budget v-else-if="currentView === 'budget'" />
