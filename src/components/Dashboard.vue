@@ -5,8 +5,10 @@ import TransactionItem from './TransactionItem.vue'
 import AddTransactionModal from './AddTransactionModal.vue'
 import { useDashboardStats, useRecentTransactions } from '../composables/useDashboard.js'
 import { useAuth } from '../composables/useAuth.js'
+import { usePWA } from '../composables/usePWA.js'
 
 const isTransactionModalOpen = ref(false)
+const { isInstallable, promptInstall } = usePWA()
 
 const { data: stats, isLoading: statsLoading } = useDashboardStats()
 const { data: recentTransactions, isLoading: txLoading } = useRecentTransactions()
@@ -102,7 +104,7 @@ function formatDate(dateStr) {
     </div>
 
     <!-- A2HS Banner -->
-    <div class="relative flex overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white shadow-lg">
+    <div v-if="isInstallable" class="relative flex overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white shadow-lg">
       <div class="bg-pattern absolute inset-0 opacity-10" data-alt="Abstract dotted background pattern" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;"></div>
       <div class="relative z-10 flex w-full flex-col justify-between gap-6 md:flex-row md:items-center">
         <div class="flex items-start gap-4">
@@ -114,7 +116,7 @@ function formatDate(dateStr) {
             <p class="mt-1 max-w-xl text-sm text-blue-100">Add CuanTrack to your home screen for quick access, push notifications, and full offline capabilities.</p>
           </div>
         </div>
-        <button class="shrink-0 whitespace-nowrap rounded-lg bg-white px-5 py-2.5 text-sm font-bold text-blue-600 shadow hover:bg-blue-50 transition-colors">
+        <button @click="promptInstall" class="shrink-0 whitespace-nowrap rounded-lg bg-white px-5 py-2.5 text-sm font-bold text-blue-600 shadow hover:bg-blue-50 transition-colors">
           Add to Home Screen
         </button>
       </div>
