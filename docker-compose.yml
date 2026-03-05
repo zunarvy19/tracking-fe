@@ -1,0 +1,13 @@
+services:
+  tflow-web:
+    build: .
+    container_name: tflow_fe
+    restart: unless-stopped
+    ports:
+      - "9696:80"
+    networks:
+      - shared_pg_network
+
+networks:
+  shared_pg_network:
+    external: true
