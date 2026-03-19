@@ -22,8 +22,8 @@ jobs:
             echo "Pull latest code..."
             git pull origin main
 
-            echo "Install & build..."
-            npm install
-            npm run build
+            echo "Rebuild & restart container..."
+            docker compose down
+            docker compose up -d --build
 
             echo "Done deploy!"
