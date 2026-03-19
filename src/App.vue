@@ -11,6 +11,7 @@ import Transactions from './components/Transactions.vue'
 import Budget from './components/Budget.vue'
 import Reports from './components/Reports.vue'
 import Settings from './components/Settings.vue'
+import Tutorial from './components/Tutorial.vue'
 
 const { isAuthenticated, isLoading } = useAuth()
 
@@ -26,7 +27,7 @@ function handleNavigate(view) {
 
 <template>
   <!-- Loading state -->
-  <div v-if="isLoading" class="min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark">
+  <div v-if="isLoading" class="min-h-screen flex items-center justify-center bg-background">
     <div class="flex flex-col items-center gap-4">
       <div class="relative">
         <div class="w-12 h-12 rounded-full border-4 border-slate-200 dark:border-slate-700"></div>
@@ -45,13 +46,14 @@ function handleNavigate(view) {
   <!-- Main app (authenticated) -->
   <div v-else class="flex min-h-screen w-full overflow-hidden">
     <Sidebar :currentView="currentView" :isMobileOpen="isMobileMenuOpen" @navigate="handleNavigate" @close="isMobileMenuOpen = false" />
-    <main class="flex h-screen flex-1 flex-col overflow-y-auto bg-background-light dark:bg-background-dark relative">
+    <main class="flex h-screen flex-1 flex-col overflow-y-auto bg-background relative">
       <MobileHeader :currentView="currentView" @toggle-menu="isMobileMenuOpen = !isMobileMenuOpen" />
       <Dashboard v-if="currentView === 'dashboard'" />
       <Transactions v-else-if="currentView === 'transactions'" />
       <Budget v-else-if="currentView === 'budget'" />
       <Reports v-else-if="currentView === 'reports'" />
       <Settings v-else-if="currentView === 'settings'" />
+      <Tutorial v-else-if="currentView === 'tutorial'" />
     </main>
   </div>
 </template>

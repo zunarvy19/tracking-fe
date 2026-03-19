@@ -4,6 +4,8 @@ import { useUser } from '../composables/useUser.js'
 import { useAuth } from '../composables/useAuth.js'
 import { useStorage } from '../composables/useStorage.js'
 import CategorySettings from './CategorySettings.vue'
+import PgButton from './ui/PgButton.vue'
+import PgCard from './ui/PgCard.vue'
 
 const { profile, isLoading, updateProfile, isUpdating, deleteAccount, isDeleting } = useUser()
 const { user } = useAuth()
@@ -47,13 +49,13 @@ function handleDeleteAccount() {
 
 <template>
   <div class="flex-1 overflow-y-auto p-4 md:p-8">
-    <div class="max-w-5xl mx-auto flex flex-col gap-8 pb-10">
+    <div class="max-w-5xl mx-auto flex flex-col gap-10 pb-10">
       
       <!-- Header -->
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div class="flex flex-col gap-1">
-          <h1 class="text-text-primary-light dark:text-white text-3xl md:text-4xl font-extrabold tracking-tight">Settings &amp; Management</h1>
-          <p class="text-text-secondary-light dark:text-slate-400 text-base">Manage your account preferences, and sync status.</p>
+        <div class="flex flex-col gap-2">
+          <h1 class="text-4xl font-extrabold tracking-tight text-foreground underline decoration-tertiary decoration-4 underline-offset-4">Settings &amp; Management</h1>
+          <p class="text-mutedForeground font-bold tracking-wide mt-2">Manage your account preferences, and sync status.</p>
         </div>
       </div>
       
@@ -61,177 +63,178 @@ function handleDeleteAccount() {
       <div class="grid gap-8">
         
         <!-- Profile Section -->
-        <section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-subtle border border-border-light dark:border-border-dark overflow-hidden">
-          <div class="px-6 py-5 border-b border-border-light dark:border-border-dark flex justify-between items-center">
-            <h2 class="text-lg font-bold text-text-primary-light dark:text-white">Profile Settings</h2>
-            <span class="px-2.5 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs font-semibold flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+        <PgCard class="p-0 overflow-hidden bg-white">
+          <div class="px-6 py-5 border-b-2 border-foreground bg-quaternary/20 flex justify-between items-center">
+            <h2 class="text-xl font-extrabold text-foreground uppercase tracking-widest">Profile Settings</h2>
+            <span class="px-3 py-1 rounded-full bg-white border-2 border-foreground text-foreground text-xs font-extrabold uppercase tracking-widest flex items-center gap-2 pop-shadow-sm">
+              <span class="w-2 h-2 rounded-full border border-foreground bg-success animate-pulse"></span>
               Active
             </span>
           </div>
           
           <div v-if="isLoading" class="p-6 animate-pulse space-y-6">
             <div class="flex items-center gap-6">
-              <div class="h-24 w-24 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+              <div class="h-24 w-24 rounded-full border-2 border-foreground bg-muted"></div>
               <div class="space-y-2">
-                <div class="h-5 w-32 bg-slate-200 dark:bg-slate-700 rounded"></div>
-                <div class="h-4 w-48 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                <div class="h-5 w-32 bg-muted rounded border-2 border-foreground"></div>
+                <div class="h-4 w-48 bg-muted rounded border-2 border-foreground"></div>
               </div>
             </div>
           </div>
           <div v-else class="p-6">
-            <div class="flex flex-col sm:flex-row items-center gap-6">
+            <div class="flex flex-col sm:flex-row items-center gap-8">
               
               <!-- Avatar -->
               <div class="relative group">
-                <div class="h-24 w-24 rounded-full bg-primary flex items-center justify-center shadow-md ring-4 ring-white dark:ring-slate-800">
-                  <span class="text-white text-3xl font-bold">{{ (profileData?.name || 'U')[0].toUpperCase() }}</span>
+                <div class="h-28 w-28 rounded-full border-4 border-foreground bg-primary flex items-center justify-center pop-shadow-sm">
+                  <span class="text-white text-4xl font-extrabold">{{ (profileData?.name || 'U')[0].toUpperCase() }}</span>
                 </div>
-                <button aria-label="Edit photo" class="absolute bottom-0 right-0 p-1.5 bg-primary text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors hidden">
-                  <span class="material-symbols-outlined text-[18px]">edit</span>
-                </button>
               </div>
               
               <!-- User Info -->
-              <div class="flex-1 text-center sm:text-left space-y-1">
-                <h3 class="text-xl font-bold text-text-primary-light dark:text-white">{{ profileData?.name || 'User' }}</h3>
-                <p class="text-text-secondary-light dark:text-slate-400">{{ profileData?.email }}</p>
-                <div class="pt-2 flex gap-3 justify-center sm:justify-start">
-                  <button @click="handleSaveProfile" :disabled="isUpdating" class="px-4 py-2 bg-primary text-white border border-primary rounded-lg text-sm font-semibold shadow-sm hover:bg-blue-600 transition-colors disabled:opacity-50">
+              <div class="flex-1 text-center sm:text-left space-y-2">
+                <h3 class="text-2xl font-extrabold text-foreground tracking-tight">{{ profileData?.name || 'User' }}</h3>
+                <p class="text-mutedForeground font-bold tracking-wide">{{ profileData?.email }}</p>
+                <div class="pt-4 flex gap-3 justify-center sm:justify-start">
+                  <PgButton @click="handleSaveProfile" :disabled="isUpdating" variant="primary">
                     {{ isUpdating ? 'Saving...' : 'Save Changes' }}
-                  </button>
+                  </PgButton>
                 </div>
               </div>
             </div>
             
             <!-- Form Fields -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 pt-8 border-t border-border-light dark:border-border-dark">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10 pt-8 border-t-2 border-foreground border-dashed">
               <div class="space-y-2">
-                <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Display Name</label>
-                <input v-model="displayName" class="w-full px-4 py-2.5 rounded-lg border border-border-light dark:border-border-dark bg-slate-50 dark:bg-slate-900 text-text-primary-light dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" type="text"/>
+                <label class="text-xs font-extrabold uppercase tracking-widest text-foreground">Display Name</label>
+                <input v-model="displayName" class="w-full px-4 py-3 rounded-xl border-2 border-foreground bg-white text-foreground font-bold focus:outline-none focus:ring-0 focus:border-accent transition-all pop-shadow-sm" type="text"/>
               </div>
               
               <div class="space-y-2">
-                <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Default Currency</label>
+                <label class="text-xs font-extrabold uppercase tracking-widest text-foreground">Default Currency</label>
                 <div class="relative">
-                  <select v-model="defaultCurrency" class="w-full px-4 py-2.5 pr-10 rounded-lg border border-border-light dark:border-border-dark bg-slate-50 dark:bg-slate-900 text-text-primary-light dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none transition-all">
+                  <select v-model="defaultCurrency" class="w-full px-4 py-3 pr-10 rounded-xl border-2 border-foreground bg-white text-foreground font-extrabold uppercase tracking-widest appearance-none focus:outline-none focus:ring-0 focus:border-accent transition-all pop-shadow-sm cursor-pointer">
                     <option value="IDR">IDR (Rp)</option>
                     <option value="USD">USD ($)</option>
                     <option value="EUR">EUR (€)</option>
                     <option value="GBP">GBP (£)</option>
                   </select>
-                  <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary-light pointer-events-none">expand_more</span>
+                  <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-foreground font-extrabold pointer-events-none">expand_more</span>
                 </div>
               </div>
             </div>
           </div>
-        </section>
+        </PgCard>
         
         <!-- Storage & Sync Section -->
-        <section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-subtle border border-border-light dark:border-border-dark overflow-hidden hidden">
-          <div class="px-6 py-5 border-b border-border-light dark:border-border-dark flex justify-between items-center">
-            <div class="flex items-center gap-3">
-              <h2 class="text-lg font-bold text-text-primary-light dark:text-white">Data &amp; Storage</h2>
+        <PgCard class="p-0 overflow-hidden bg-white hidden">
+          <div class="px-6 py-5 border-b-2 border-foreground bg-quaternary/20 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+              <h2 class="text-xl font-extrabold text-foreground uppercase tracking-widest">Data &amp; Storage</h2>
               <span :class="[
-                'px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1',
+                'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest flex items-center gap-2 border-2 border-foreground pop-shadow-sm bg-white',
                 isOnline
-                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                  : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                  ? 'text-foreground'
+                  : 'text-danger'
               ]">
                 <span :class="[
-                  'w-1.5 h-1.5 rounded-full',
-                  isOnline ? 'bg-green-500 animate-pulse' : 'bg-red-500'
+                  'w-2 h-2 rounded-full border border-foreground',
+                  isOnline ? 'bg-success animate-pulse' : 'bg-danger'
                 ]"></span>
                 {{ isOnline ? 'Online' : 'Offline' }}
               </span>
             </div>
           </div>
           
-          <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2 space-y-6">
-              <div class="space-y-3">
+          <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div class="lg:col-span-2 space-y-8">
+              <div class="space-y-4">
                 <div class="flex justify-between items-end">
-                  <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300">Local Storage Usage (IndexedDB)</h3>
-                  <span class="text-xs font-medium text-text-secondary-light dark:text-slate-400">{{ cacheEntries }} cached entries · {{ cacheSize }}</span>
+                  <h3 class="text-sm font-extrabold uppercase tracking-widest text-foreground">Local Storage Usage (IndexedDB)</h3>
+                  <span class="text-xs font-bold text-mutedForeground tracking-wide">{{ cacheEntries }} cached entries &middot; {{ cacheSize }}</span>
                 </div>
-                <div class="h-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
+                <div class="h-6 w-full bg-muted rounded-full overflow-hidden flex border-2 border-foreground shadow-solid-soft relative">
                   <div
-                    class="h-full bg-primary transition-all duration-500"
+                    class="h-full bg-accent transition-all duration-500 border-r-2 border-foreground"
                     :style="{ width: Math.min(storageUsage.percent, 100) + '%' }"
                     title="Used Storage"
                   ></div>
+                  <!-- highlight shine -->
+                  <div class="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent pointer-events-none"></div>
                 </div>
-                <div class="flex justify-between text-xs text-text-secondary-light dark:text-slate-400">
+                <div class="flex justify-between text-xs font-extrabold uppercase tracking-widest text-mutedForeground">
                   <span>{{ storageUsage.percent }}% used</span>
                   <span>{{ cacheSize }} used</span>
                 </div>
               </div>
               
               <!-- Clear Cache -->
-              <button @click="clearCache" class="px-4 py-2 border border-border-light dark:border-border-dark text-slate-600 dark:text-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] transition-all">
-                <span class="inline-flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-[18px]">delete_sweep</span>
-                  Clear Local Cache
-                </span>
-              </button>
+              <PgButton @click="clearCache" variant="ghost" class="gap-2 border-dashed">
+                <span class="material-symbols-outlined text-[20px]">delete_sweep</span>
+                Clear Local Cache
+              </PgButton>
             </div>
             
             <!-- Sync Status Card -->
             <div class="lg:col-span-1">
-              <div class="bg-gradient-to-b from-slate-50 to-white dark:from-slate-800 dark:to-slate-800/50 rounded-xl p-5 border border-border-light dark:border-border-dark shadow-sm h-full flex flex-col">
-                <div class="flex items-center justify-between mb-4">
-                  <h3 class="font-bold text-text-primary-light dark:text-white">Cloud Sync</h3>
-                  <span :class="['material-symbols-outlined', isOnline ? 'text-green-500' : 'text-slate-400']">
+              <div class="bg-secondary rounded-xl p-5 border-2 border-foreground pop-shadow-sm h-full flex flex-col relative overflow-hidden group">
+                <div class="absolute right-[-20px] top-[-20px] p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <span class="material-symbols-outlined text-[100px] text-white">cloud_sync</span>
+                </div>
+                <div class="flex items-center justify-between mb-4 z-10">
+                  <h3 class="font-extrabold uppercase tracking-widest text-white">Cloud Sync</h3>
+                  <span :class="['material-symbols-outlined font-extrabold', isOnline ? 'text-white' : 'text-danger']">
                     {{ isOnline ? 'cloud_done' : 'cloud_off' }}
                   </span>
                 </div>
-                <div class="flex-1 flex flex-col justify-center items-center text-center space-y-2 py-4">
+                <div class="flex-1 flex flex-col justify-center items-center text-center space-y-3 py-4 z-10">
                   <div :class="[
-                    'w-16 h-16 rounded-full flex items-center justify-center mb-1',
-                    isOnline ? 'bg-green-50 dark:bg-green-900/20' : 'bg-slate-100 dark:bg-slate-700'
+                    'w-20 h-20 rounded-full border-4 border-foreground flex items-center justify-center mb-2 pop-shadow-sm',
+                    isOnline ? 'bg-white' : 'bg-muted'
                   ]">
                     <span :class="[
-                      'material-symbols-outlined text-3xl',
-                      isOnline ? 'text-green-500' : 'text-slate-400'
+                      'material-symbols-outlined text-4xl',
+                      isOnline ? 'text-success' : 'text-danger'
                     ]">{{ isOnline ? 'check_circle' : 'cloud_off' }}</span>
                   </div>
-                  <p class="text-sm font-medium text-text-primary-light dark:text-white">
+                  <p class="text-base font-extrabold tracking-tight text-white">
                     {{ isOnline ? 'Connected to server' : 'You are offline' }}
                   </p>
-                  <p class="text-xs text-text-secondary-light dark:text-slate-400">Last synced: {{ timeAgo }}</p>
+                  <p class="text-xs font-bold tracking-widest uppercase text-white/80">Last synced: {{ timeAgo }}</p>
                 </div>
-                <button
+                <PgButton
                   @click="forceSyncAll"
                   :disabled="isSyncing || !isOnline"
-                  class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-700 border border-border-light dark:border-border-dark text-slate-700 dark:text-slate-200 rounded-lg text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600 active:scale-[0.98] transition-all mt-auto group disabled:opacity-50 disabled:cursor-not-allowed"
+                  variant="primary"
+                  class="mt-auto z-10 w-full group-hover:bg-white group-hover:text-secondary group-hover:border-foreground"
                 >
                   <span :class="['material-symbols-outlined text-[20px]', isSyncing ? 'animate-spin' : 'group-hover:animate-spin']">sync</span>
                   {{ isSyncing ? 'Syncing...' : 'Force Sync' }}
-                </button>
+                </PgButton>
               </div>
             </div>
           </div>
-        </section>
+        </PgCard>
         
         <!-- Category Settings -->
-         <!-- only admin can see this -->
-        <CategorySettings v-if="user?.role === 'superadmin'" />
+        <!-- only admin can see this -->
+        <CategorySettings />
         
         <!-- Danger Zone -->
-        <section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-subtle border border-red-200 dark:border-red-900/30 overflow-hidden">
-          <div class="px-6 py-5 border-b border-red-100 dark:border-red-900/30 bg-red-50/50 dark:bg-red-900/10">
-            <h2 class="text-lg font-bold text-red-600 dark:text-red-400">Danger Zone</h2>
+        <PgCard class="p-0 overflow-hidden bg-white border-danger">
+          <div class="px-6 py-5 border-b-2 border-danger bg-danger/10">
+            <h2 class="text-xl font-extrabold text-danger uppercase tracking-widest">Danger Zone</h2>
           </div>
-          <div class="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div class="p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div>
-              <h3 class="text-sm font-bold text-text-primary-light dark:text-white">Delete Account</h3>
-              <p class="text-sm text-text-secondary-light dark:text-slate-400 mt-1">Once you delete your account, there is no going back. Please be certain.</p>
+              <h3 class="text-lg font-extrabold text-foreground tracking-tight">Delete Account</h3>
+              <p class="text-sm font-bold tracking-wide text-mutedForeground mt-2">Once you delete your account, there is no going back. Please be certain.</p>
             </div>
-            <button @click="handleDeleteAccount" :disabled="isDeleting" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold shadow-sm transition-colors whitespace-nowrap disabled:opacity-50">
+            <button @click="handleDeleteAccount" :disabled="isDeleting" class="px-6 py-3 bg-danger text-white rounded-xl border-2 border-foreground font-extrabold uppercase tracking-widest shadow-solid-soft hover:shadow-solid hover:-translate-y-1 hover:-translate-x-1 active:shadow-none active:translate-y-0 active:translate-x-0 transition-all whitespace-nowrap disabled:opacity-50">
               {{ isDeleting ? 'Deleting...' : 'Delete Account' }}
             </button>
           </div>
-        </section>
+        </PgCard>
         
       </div>
     </div>

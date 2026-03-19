@@ -2,6 +2,8 @@
 import { ref, computed, reactive, watch } from 'vue'
 import AddTransactionModal from './AddTransactionModal.vue'
 import { useTransactions, useExportTransactionsCsv } from '../composables/useTransactions.js'
+import PgButton from './ui/PgButton.vue'
+import PgCard from './ui/PgCard.vue'
 
 const isTransactionModalOpen = ref(false)
 const selectedTransaction = ref(null)
@@ -76,14 +78,14 @@ function getCategoryIcon(tx) {
 
 function getCategoryColor(tx) {
   const colorMap = {
-    blue: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400' },
-    orange: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-600 dark:text-orange-400' },
-    green: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-600 dark:text-green-400' },
-    emerald: { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600 dark:text-emerald-400' },
-    purple: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-600 dark:text-purple-400' },
-    teal: { bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-600 dark:text-teal-400' },
-    pink: { bg: 'bg-pink-100 dark:bg-pink-900/30', text: 'text-pink-600 dark:text-pink-400' },
-    red: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-600 dark:text-red-400' },
+    blue: { bg: 'bg-accent', text: 'text-white' },
+    orange: { bg: 'bg-secondary', text: 'text-white' },
+    green: { bg: 'bg-quaternary', text: 'text-foreground' },
+    emerald: { bg: 'bg-quaternary', text: 'text-foreground' },
+    purple: { bg: 'bg-tertiary', text: 'text-foreground' },
+    teal: { bg: 'bg-quaternary', text: 'text-foreground' },
+    pink: { bg: 'bg-accent', text: 'text-white' },
+    red: { bg: 'bg-danger', text: 'text-white' },
   }
   return colorMap[tx.category?.color] || colorMap.blue
 }
@@ -94,7 +96,7 @@ function formatAmount(tx) {
 }
 
 function amountClass(tx) {
-  return tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'
+  return tx.type === 'income' ? 'text-secondary' : 'text-foreground'
 }
 
 function formatDate(d) {
@@ -106,9 +108,9 @@ function formatCurrency(val) {
 }
 
 function statusBadge(status) {
-  if (status === 'completed') return { class: 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-500/10 dark:text-green-400 dark:ring-green-500/20', dot: 'bg-green-600 dark:bg-green-400', label: 'Completed' }
-  if (status === 'pending') return { class: 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/20', dot: '', icon: 'sync', label: 'Pending Sync' }
-  return { class: 'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-500/10 dark:text-blue-400 dark:ring-blue-500/20', dot: '', icon: 'sync', label: 'Syncing' }
+  if (status === 'completed') return { class: 'bg-quaternary text-foreground border-2 border-foreground', dot: 'bg-foreground', label: 'Completed' }
+  if (status === 'pending') return { class: 'bg-secondary text-white border-2 border-foreground', dot: '', icon: 'sync', label: 'Pending Sync' }
+  return { class: 'bg-accent text-white border-2 border-foreground', dot: '', icon: 'sync', label: 'Syncing' }
 }
 
 async function handleExportCsv() {
@@ -125,49 +127,49 @@ async function handleExportCsv() {
 
 <template>
   <div class="flex-1 overflow-y-auto p-4 lg:p-8">
-    <div class="mx-auto max-w-6xl space-y-6">
+    <div class="mx-auto max-w-6xl space-y-8 pb-10">
       
       <!-- Header Section -->
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Transaction History</h2>
-          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">View and manage all your income and expenses.</p>
+          <h2 class="text-4xl font-extrabold tracking-tight text-foreground underline decoration-tertiary decoration-4 underline-offset-4">Transaction History</h2>
+          <p class="mt-2 text-mutedForeground font-bold tracking-wide">View and manage all your income and expenses.</p>
         </div>
-        <div class="flex items-center gap-2">
-          <button @click="handleExportCsv" class="inline-flex items-center justify-center gap-2 rounded-lg bg-surface-light px-4 py-2 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 dark:bg-surface-dark dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800">
-            <span class="material-symbols-outlined text-[20px]">file_download</span>
+        <div class="flex items-center gap-4">
+          <PgButton variant="secondary" @click="handleExportCsv" class="gap-2">
+            <span class="material-symbols-outlined text-xl">file_download</span>
             <span class="hidden sm:inline">Export CSV</span>
-          </button>
-          <button @click="openAddModal" class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-slate-900">
-            <span class="material-symbols-outlined text-[20px]">add</span>
+          </PgButton>
+          <PgButton @click="openAddModal" class="gap-2">
+            <span class="material-symbols-outlined text-xl">add_circle</span>
             <span class="hidden sm:inline">Add Transaction</span>
-          </button>
+          </PgButton>
         </div>
       </div>
       
       <!-- Filters -->
-      <div class="sticky top-0 z-10 -mx-4 bg-background-light/95 px-4 py-2 backdrop-blur dark:bg-background-dark/95 lg:-mx-8 lg:px-8">
-        <div class="flex flex-wrap items-center gap-3">
+      <div class="sticky top-0 z-10 -mx-4 bg-background/95 px-4 py-4 backdrop-blur lg:-mx-8 lg:px-8 border-b-2 border-foreground mb-4">
+        <div class="flex flex-wrap items-center gap-4">
           <div class="relative group">
-            <select v-model="periodFilter" class="appearance-none cursor-pointer rounded-lg border-0 bg-white py-2 pl-4 pr-10 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200 focus:ring-2 focus:ring-primary dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700">
+            <select v-model="periodFilter" class="appearance-none cursor-pointer rounded-xl border-2 border-foreground bg-white py-2 pl-4 pr-10 text-sm font-extrabold uppercase tracking-widest text-foreground pop-shadow-sm focus:outline-none focus:ring-0 focus:border-accent transition-colors">
               <option value="this_month">This Month</option>
               <option value="last_month">Last Month</option>
               <option value="last_3_months">Last 3 Months</option>
               <option value="this_year">This Year</option>
             </select>
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-foreground">
               <span class="material-symbols-outlined text-[20px]">expand_more</span>
             </div>
           </div>
           
           <div class="relative group">
-            <select v-model="filters.status" class="appearance-none cursor-pointer rounded-lg border-0 bg-white py-2 pl-4 pr-10 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200 focus:ring-2 focus:ring-primary dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700">
+            <select v-model="filters.status" class="appearance-none cursor-pointer rounded-xl border-2 border-foreground bg-white py-2 pl-4 pr-10 text-sm font-extrabold uppercase tracking-widest text-foreground pop-shadow-sm focus:outline-none focus:ring-0 focus:border-accent transition-colors">
               <option value="">All Status</option>
               <option value="completed">Completed</option>
               <option value="pending">Pending</option>
               <option value="syncing">Syncing</option>
             </select>
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-foreground">
               <span class="material-symbols-outlined text-[20px]">expand_more</span>
             </div>
           </div>
@@ -175,10 +177,10 @@ async function handleExportCsv() {
       </div>
       
       <!-- Transactions List Card -->
-      <div class="overflow-hidden rounded-xl border border-slate-200 bg-surface-light shadow-card dark:border-slate-800 dark:bg-surface-dark">
-        <div class="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
+      <PgCard class="p-0 overflow-hidden bg-white">
+        <div class="min-w-full divide-y-2 divide-foreground">
           <!-- Table Header -->
-          <div class="hidden grid-cols-12 gap-4 bg-slate-50 px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:bg-slate-800/50 dark:text-slate-400 lg:grid">
+          <div class="hidden grid-cols-12 gap-4 bg-tertiary px-6 py-4 text-xs font-extrabold uppercase tracking-widest text-foreground lg:grid">
             <div class="col-span-2">Date</div>
             <div class="col-span-3">Description</div>
             <div class="col-span-2">Category</div>
@@ -189,91 +191,90 @@ async function handleExportCsv() {
           
           <!-- Loading -->
           <template v-if="isLoading">
-            <div v-for="i in 5" :key="i" class="px-6 py-4 animate-pulse flex items-center gap-4">
-              <div class="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+            <div v-for="i in 5" :key="i" class="px-6 py-6 animate-pulse flex items-center gap-4 border-b-2 border-foreground">
+              <div class="h-10 w-10 rounded-full border-2 border-foreground bg-muted"></div>
               <div class="flex-1 space-y-2">
-                <div class="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded"></div>
-                <div class="h-3 w-48 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                <div class="h-4 w-32 bg-muted rounded border-2 border-foreground"></div>
+                <div class="h-3 w-48 bg-muted rounded border-2 border-foreground"></div>
               </div>
-              <div class="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded"></div>
+              <div class="h-4 w-20 bg-muted rounded border-2 border-foreground"></div>
             </div>
           </template>
           
           <!-- List Items -->
           <template v-else>
-            <div v-for="tx in transactionList" :key="tx.id" class="group grid grid-cols-1 gap-4 px-6 py-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 lg:grid-cols-12 lg:items-center lg:py-3">
+            <div v-for="tx in transactionList" :key="tx.id" class="group grid grid-cols-1 gap-4 px-6 py-6 transition-colors hover:bg-secondary/5 lg:grid-cols-12 lg:items-center">
               <div class="flex items-center justify-between lg:col-span-2 lg:block">
-                <span class="text-sm font-medium text-slate-900 dark:text-slate-200">{{ formatDate(tx.date) }}</span>
+                <span class="text-sm font-extrabold text-foreground tracking-wide">{{ formatDate(tx.date) }}</span>
               </div>
               <div class="lg:col-span-3">
-                <div class="flex items-center gap-3">
-                  <div :class="['flex h-10 w-10 shrink-0 items-center justify-center rounded-full', getCategoryColor(tx).bg, getCategoryColor(tx).text]">
-                    <span class="material-symbols-outlined">{{ getCategoryIcon(tx) }}</span>
+                <div class="flex items-center gap-4">
+                  <div :class="['flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-foreground pop-shadow-sm', getCategoryColor(tx).bg, getCategoryColor(tx).text]">
+                    <span class="material-symbols-outlined text-[24px]">{{ getCategoryIcon(tx) }}</span>
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-slate-900 dark:text-white">{{ tx.description }}</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 lg:hidden">{{ tx.category?.name || 'Uncategorized' }}</p>
+                    <p class="text-base font-extrabold text-foreground tracking-tight">{{ tx.description }}</p>
+                    <p class="text-xs font-bold text-mutedForeground lg:hidden tracking-wider uppercase mt-1">{{ tx.category?.name || 'Uncategorized' }}</p>
                   </div>
                 </div>
               </div>
               <div class="hidden lg:col-span-2 lg:block">
-                <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-800 dark:bg-slate-800 dark:text-slate-300">
+                <span class="inline-flex items-center rounded-full bg-white border-2 border-foreground px-3 py-1 text-xs font-extrabold uppercase tracking-widest text-foreground pop-shadow-sm">
                   {{ tx.category?.name || 'Uncategorized' }}
                 </span>
               </div>
               <div class="flex items-center justify-between lg:col-span-2 lg:justify-start">
-                <span :class="['inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset', statusBadge(tx.status).class]">
-                  <span v-if="statusBadge(tx.status).dot" :class="['h-1.5 w-1.5 rounded-full', statusBadge(tx.status).dot]"></span>
+                <span :class="['inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-widest pop-shadow-sm', statusBadge(tx.status).class]">
+                  <span v-if="statusBadge(tx.status).dot" :class="['h-2 w-2 rounded-full', statusBadge(tx.status).dot]"></span>
                   <span v-if="statusBadge(tx.status).icon" :class="['material-symbols-outlined text-[14px]', tx.status === 'pending' ? 'animate-pulse' : '']">{{ statusBadge(tx.status).icon }}</span>
                   {{ statusBadge(tx.status).label }}
                 </span>
               </div>
               <div class="flex items-center justify-between lg:col-span-2 lg:justify-end">
-                <span class="lg:hidden text-sm text-slate-500">Amount</span>
-                <span :class="['text-sm font-bold', amountClass(tx)]">{{ formatAmount(tx) }}</span>
+                <span class="lg:hidden text-xs font-extrabold uppercase tracking-widest text-mutedForeground">Amount</span>
+                <span :class="['text-lg font-extrabold tracking-tight', amountClass(tx)]">{{ formatAmount(tx) }}</span>
               </div>
-              <div class="flex items-center justify-end lg:col-span-1 lg:justify-center gap-2">
-                <button @click="openEditModal(tx)" class="text-slate-400 hover:text-primary dark:text-slate-500 dark:hover:text-primary transition-colors" title="Edit">
-                  <span class="material-symbols-outlined text-[20px]">edit</span>
+              <div class="flex items-center justify-end lg:col-span-1 lg:justify-center gap-3">
+                <button @click="openEditModal(tx)" class="text-mutedForeground hover:text-foreground transition-transform hover:scale-110 focus:outline-none" title="Edit">
+                  <span class="material-symbols-outlined text-[24px]">edit_square</span>
                 </button>
-                <button @click="handleDelete(tx.id)" class="text-slate-400 hover:text-red-600 dark:text-slate-500 dark:hover:text-red-500 transition-colors" title="Delete">
-                  <span class="material-symbols-outlined text-[20px]">delete</span>
+                <button @click="handleDelete(tx.id)" class="text-mutedForeground hover:text-danger transition-transform hover:scale-110 focus:outline-none" title="Delete">
+                  <span class="material-symbols-outlined text-[24px]">delete</span>
                 </button>
               </div>
             </div>
             
-            <div v-if="transactionList.length === 0" class="px-6 py-12 text-center text-slate-500">
-              <span class="material-symbols-outlined text-4xl mb-2">receipt_long</span>
-              <p>No transactions found.</p>
+            <div v-if="transactionList.length === 0" class="px-6 py-16 text-center text-mutedForeground">
+              <span class="material-symbols-outlined text-5xl mb-4">receipt_long</span>
+              <p class="font-extrabold tracking-wider uppercase">No transactions found.</p>
             </div>
           </template>
         </div>
         
         <!-- Footer / Pagination -->
-        <div v-if="pagination.total > 0" class="border-t border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-800/50 sm:px-6">
+        <div v-if="pagination.total > 0" class="border-t-2 border-foreground bg-quaternary/30 px-6 py-4">
           <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <p class="text-sm text-slate-700 dark:text-slate-300">
-              Showing <span class="font-medium">{{ (pagination.page - 1) * filters.limit + 1 }}</span> to <span class="font-medium">{{ Math.min(pagination.page * filters.limit, pagination.total) }}</span> of <span class="font-medium">{{ pagination.total }}</span> results
+            <p class="text-sm font-bold text-foreground">
+              Showing <span class="font-extrabold">{{ (pagination.page - 1) * filters.limit + 1 }}</span> to <span class="font-extrabold">{{ Math.min(pagination.page * filters.limit, pagination.total) }}</span> of <span class="font-extrabold">{{ pagination.total }}</span> results
             </p>
             <div class="flex items-center justify-center gap-2">
-              <button @click="goToPage(pagination.page - 1)" :disabled="pagination.page <= 1" class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700">
-                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+              <button @click="goToPage(pagination.page - 1)" :disabled="pagination.page <= 1" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border-2 border-foreground bg-white text-foreground hover:bg-secondary/10 disabled:opacity-50 transition-colors pop-shadow-sm focus:outline-none active:translate-y-px active:shadow-none">
+                <span class="material-symbols-outlined text-[20px]">chevron_left</span>
               </button>
               <template v-for="p in pagination.totalPages" :key="p">
-                <button v-if="p <= 3 || p === pagination.totalPages || Math.abs(p - pagination.page) <= 1" @click="goToPage(p)" :class="p === pagination.page ? 'inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-white' : 'inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 bg-white text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'">
+                <button v-if="p <= 3 || p === pagination.totalPages || Math.abs(p - pagination.page) <= 1" @click="goToPage(p)" :class="p === pagination.page ? 'inline-flex h-10 w-10 items-center justify-center rounded-lg border-2 border-foreground bg-accent text-white font-extrabold pop-shadow-sm' : 'inline-flex h-10 w-10 items-center justify-center rounded-lg border-2 border-foreground bg-white text-foreground font-extrabold hover:bg-secondary/10 transition-colors pop-shadow-sm focus:outline-none active:translate-y-px active:shadow-none'">
                   {{ p }}
                 </button>
-                <span v-else-if="p === 4 || p === pagination.totalPages - 1" class="text-slate-500">...</span>
+                <span v-else-if="p === 4 || p === pagination.totalPages - 1" class="text-foreground font-extrabold px-1">...</span>
               </template>
-              <button @click="goToPage(pagination.page + 1)" :disabled="pagination.page >= pagination.totalPages" class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700">
-                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+              <button @click="goToPage(pagination.page + 1)" :disabled="pagination.page >= pagination.totalPages" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border-2 border-foreground bg-white text-foreground hover:bg-secondary/10 disabled:opacity-50 transition-colors pop-shadow-sm focus:outline-none active:translate-y-px active:shadow-none">
+                <span class="material-symbols-outlined text-[20px]">chevron_right</span>
               </button>
             </div>
           </div>
         </div>
-      </div>
+      </PgCard>
     </div>
-    <div class="h-8"></div>
     
     <AddTransactionModal 
       :isOpen="isTransactionModalOpen" 

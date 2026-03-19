@@ -5,7 +5,7 @@ defineProps({
   amount: String,
   amountClass: {
     type: String,
-    default: 'text-text-primary-light dark:text-text-primary-dark'
+    default: 'text-foreground'
   },
   method: String,
   icon: String,
@@ -15,19 +15,19 @@ defineProps({
 </script>
 
 <template>
-  <div class="group flex flex-col gap-4 px-6 py-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 sm:flex-row sm:items-center sm:justify-between">
+  <div class="group flex flex-col gap-4 px-6 py-4 transition-colors hover:bg-muted sm:flex-row sm:items-center sm:justify-between">
     <div class="flex items-center gap-4">
-      <div :class="['flex h-12 w-12 shrink-0 items-center justify-center rounded-full', iconBgClass, iconTextClass]">
-        <span class="material-symbols-outlined">{{ icon }}</span>
+      <div :class="['flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-foreground pop-shadow-sm', iconBgClass, iconTextClass]">
+        <span class="material-symbols-outlined text-foreground">{{ icon }}</span>
       </div>
       <div>
-        <p class="font-medium text-text-primary-light dark:text-text-primary-dark">{{ title }}</p>
-        <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">{{ subtitle }}</p>
+        <p class="font-extrabold text-foreground">{{ title }}</p>
+        <p class="text-sm font-bold text-mutedForeground">{{ subtitle }}</p>
       </div>
     </div>
     <div class="text-right">
-      <p :class="['font-bold', amountClass]">{{ amount }}</p>
-      <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">{{ method }}</p>
+      <p :class="['font-extrabold text-lg', amountClass]">{{ amount }}</p>
+      <p class="text-sm font-bold text-mutedForeground">{{ method }}</p>
     </div>
   </div>
 </template>

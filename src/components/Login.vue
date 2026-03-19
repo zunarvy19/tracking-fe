@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue'
 import { useAuth } from '../composables/useAuth.js'
+import PgButton from './ui/PgButton.vue'
+import PgInput from './ui/PgInput.vue'
+import PgCard from './ui/PgCard.vue'
 
 const emit = defineEmits(['switch-to-register'])
 
@@ -37,91 +40,75 @@ async function handleLogin() {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 p-4 relative overflow-hidden">
-    <!-- Background decorations -->
-    <div class="absolute top-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 animate-pulse"></div>
-    <div class="absolute bottom-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
-    <div class="absolute top-1/2 left-1/2 w-64 h-64 bg-blue-400/5 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2"></div>
+  <div class="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden bg-dot-pattern">
+    <!-- Playful Background decorations -->
+    <div class="absolute top-10 left-10 w-64 h-64 bg-tertiary rounded-full border-4 border-foreground pop-shadow lg:w-96 lg:h-96"></div>
+    <div class="absolute bottom-10 right-10 w-48 h-48 bg-secondary rounded-[40%_60%_70%_30%/40%_50%_60%_50%] border-4 border-foreground pop-shadow lg:w-80 lg:h-80"></div>
 
     <div class="w-full max-w-md relative z-10">
       <!-- Logo & Header -->
       <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary text-white mb-4 shadow-lg shadow-primary/30">
-          <span class="material-symbols-outlined text-3xl">account_balance_wallet</span>
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-accent border-4 border-foreground pop-shadow mb-6">
+          <span class="material-symbols-outlined text-4xl text-white">account_balance_wallet</span>
         </div>
-        <h1 class="text-3xl font-extrabold text-text-primary-light dark:text-text-primary-dark tracking-tight">Welcome back</h1>
-        <p class="text-text-secondary-light dark:text-text-secondary-dark mt-2 text-sm font-medium">Sign in to your CuanTrack account</p>
+        <h1 class="text-4xl font-extrabold text-foreground tracking-tight underline decoration-secondary decoration-4 underline-offset-4">Welcome back</h1>
+        <p class="text-mutedForeground mt-4 font-medium text-lg">Sign in to your CuanTrack account</p>
       </div>
 
       <!-- Card -->
-      <div class="bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl border border-white/50 dark:border-slate-700/50 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 p-8">
+      <PgCard class="p-8 bg-white" hoverEffect>
         <!-- Error Alert -->
-        <div v-if="error" class="mb-6 flex items-start gap-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40 px-4 py-3 text-sm text-red-700 dark:text-red-300 animate-shake">
+        <div v-if="error" class="mb-6 flex items-start gap-3 rounded-xl bg-red-50 border-2 border-danger px-4 py-3 text-sm text-danger font-bold pop-shadow animate-shake">
           <span class="material-symbols-outlined text-lg mt-0.5 shrink-0">error</span>
           <span>{{ error }}</span>
         </div>
 
-        <form @submit.prevent="handleLogin" class="space-y-5">
-          <!-- Email -->
-          <div>
-            <label for="login-email" class="block text-sm font-semibold text-text-primary-light dark:text-text-primary-dark mb-1.5">Email</label>
-            <div class="relative">
-              <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-text-secondary-light dark:text-text-secondary-dark pointer-events-none">mail</span>
-              <input
-                id="login-email"
-                v-model="email"
-                type="email"
-                placeholder="you@example.com"
-                autocomplete="email"
-                class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700/50 text-text-primary-light dark:text-text-primary-dark placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-sm"
-              />
-            </div>
-          </div>
+        <form @submit.prevent="handleLogin" class="space-y-6">
+          <PgInput
+            id="login-email"
+            v-model="email"
+            type="email"
+            label="Email"
+            placeholder="you@example.com"
+            autocomplete="email"
+          >
+            <template #icon>
+              <span class="material-symbols-outlined text-xl">mail</span>
+            </template>
+          </PgInput>
 
-          <!-- Password -->
-          <div>
-            <label for="login-password" class="block text-sm font-semibold text-text-primary-light dark:text-text-primary-dark mb-1.5">Password</label>
-            <div class="relative">
-              <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-text-secondary-light dark:text-text-secondary-dark pointer-events-none">lock</span>
-              <input
-                id="login-password"
-                v-model="password"
-                :type="showPassword ? 'text' : 'password'"
-                placeholder="Enter your password"
-                autocomplete="current-password"
-                class="w-full pl-11 pr-12 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700/50 text-text-primary-light dark:text-text-primary-dark placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-sm"
-              />
-              <button
-                type="button"
-                @click="showPassword = !showPassword"
-                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors"
-              >
-                <span class="material-symbols-outlined text-lg">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
-              </button>
-            </div>
-          </div>
+          <PgInput
+            id="login-password"
+            v-model="password"
+            :type="showPassword ? 'text' : 'password'"
+            label="Password"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+          >
+            <template #icon>
+              <span class="material-symbols-outlined text-xl">lock</span>
+            </template>
+          </PgInput>
 
-          <!-- Submit -->
-          <button
+          <PgButton
             type="submit"
             :disabled="isSubmitting"
-            class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary hover:bg-primary-hover text-white font-semibold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none text-sm"
+            class="w-full mt-2"
           >
-            <svg v-if="isSubmitting" class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-            </svg>
             <span v-if="isSubmitting">Signing in…</span>
-            <span v-else>Sign in</span>
-          </button>
+            <span v-else>Let's Go!</span>
+            <span v-if="!isSubmitting" class="material-symbols-outlined ml-2 bg-white text-accent rounded-full w-6 h-6 flex items-center justify-center text-sm">arrow_forward</span>
+          </PgButton>
         </form>
-      </div>
+      </PgCard>
 
       <!-- Switch to register -->
-      <p class="text-center mt-6 text-sm text-text-secondary-light dark:text-text-secondary-dark">
-        Don't have an account?
-        <button @click="emit('switch-to-register')" class="text-primary hover:text-primary-hover font-semibold transition-colors ml-1">Create an account</button>
-      </p>
+      <PgCard class="mt-6 p-4 text-center bg-tertiary border-2 border-foreground pop-shadow cursor-pointer transition-transform hover:-translate-y-1" @click="emit('switch-to-register')">
+        <p class="text-sm font-bold text-foreground">
+          Don't have an account?
+          <button class="underline decoration-2 underline-offset-2 hover:text-white transition-colors ml-1">Create one here!</button>
+        </p>
+      </PgCard>
     </div>
   </div>
 </template>

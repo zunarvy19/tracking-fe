@@ -1,7 +1,10 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useTransactions } from '../composables/useTransactions.js'
 import { useCategories } from '../composables/useCategories.js'
+import { useBudgets } from '../composables/useBudgets.js'
+import PgCard from './ui/PgCard.vue'
+import PgButton from './ui/PgButton.vue'
 
 const props = defineProps({
   isOpen: {
@@ -17,12 +20,19 @@ const emit = defineEmits(['close'])
 
 const { createTransactionAsync, updateTransactionAsync, isCreating, isUpdating } = useTransactions()
 const { categories } = useCategories()
+const { budgets } = useBudgets()
 
 const isEditing = computed(() => !!props.initialData)
 const isSaving = computed(() => isCreating.value || isUpdating.value)
 
+const budgetCategoryIds = computed(() => {
+  return new Set((budgets.value || []).map(b => b.category?.id))
+})
+
 const expenseCategories = computed(() => {
-  return (categories.value || []).filter(c => c.type === 'expense' || c.type === 'both')
+  return (categories.value || [])
+    .filter(c => c.type === 'expense' || c.type === 'both')
+    .filter(c => budgetCategoryIds.value.has(c.id))
 })
 const incomeCategories = computed(() => {
   return (categories.value || []).filter(c => c.type === 'income' || c.type === 'both')
@@ -48,8 +58,6 @@ function resetForm() {
   transactionType.value = 'expense'
 }
 
-import { watch } from 'vue'
-
 watch(() => props.isOpen, (newVal) => {
   if (newVal) {
     if (props.initialData) {
@@ -71,11 +79,9 @@ function formatNumber(value) {
 }
 
 function handleAmountInput(e) {
-  // Remove all non-digit characters (including manually typed dots)
   const cleanValue = e.target.value.replace(/\D/g, '')
   rawAmount.value = cleanValue
   displayAmount.value = formatNumber(cleanValue)
-  // Sync back to input to handle manual dot/non-digit input
   e.target.value = displayAmount.value
 }
 
@@ -111,101 +117,104 @@ async function handleSubmit() {
       <!-- Backdrop -->
       <div 
         aria-hidden="true" 
-        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
+        class="fixed inset-0 bg-foreground/60 backdrop-blur-sm transition-opacity"
         @click="$emit('close')"
       ></div>
       
       <!-- Modal Container -->
-      <div class="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-[90vh]">
-        
-        <!-- Header -->
-        <header class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-4 bg-white dark:bg-slate-900 sticky top-0 z-10">
-            <div class="flex items-center gap-3 text-slate-900 dark:text-white">
-                <span class="material-symbols-outlined text-primary">account_balance_wallet</span>
-                <h2 class="text-lg font-bold leading-tight">{{ isEditing ? 'Edit Transaction' : 'Add Transaction' }}</h2>
+      <div class="relative w-full max-w-2xl z-50 overflow-hidden flex flex-col max-h-[90vh]">
+        <PgCard class="flex flex-col h-full bg-white p-0 overflow-hidden w-full">
+          
+          <!-- Header -->
+          <header class="flex items-center justify-between border-b-2 border-foreground px-6 py-4 bg-tertiary sticky top-0 z-10 shrink-0">
+            <div class="flex items-center gap-3 text-foreground">
+              <span class="material-symbols-outlined text-xl">account_balance_wallet</span>
+              <h2 class="text-xl font-extrabold uppercase tracking-widest">{{ isEditing ? 'Edit Transaction' : 'Add Transaction' }}</h2>
             </div>
-            <button @click="$emit('close')" class="flex items-center justify-center size-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors">
-                <span class="material-symbols-outlined">close</span>
+            <button @click="$emit('close')" class="flex items-center justify-center size-8 rounded-full hover:bg-white text-foreground transition-colors border-2 border-transparent hover:border-foreground pop-shadow-sm">
+              <span class="material-symbols-outlined text-lg">close</span>
             </button>
-        </header>
-        
-        <!-- Scrollable Content -->
-        <div class="overflow-y-auto custom-scrollbar flex-1">
-            <div class="p-6 space-y-6">
-                <!-- Toggle -->
-                <div class="flex justify-center">
-                    <div class="inline-flex h-10 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 p-1 w-full max-w-sm">
-                        <button 
-                          @click="transactionType = 'income'" 
-                          :class="['flex h-full grow items-center justify-center rounded-md px-4 transition-all font-medium text-sm', transactionType === 'income' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 dark:text-slate-400']"
-                        >Income</button>
-                        <button 
-                          @click="transactionType = 'expense'" 
-                          :class="['flex h-full grow items-center justify-center rounded-md px-4 transition-all font-medium text-sm', transactionType === 'expense' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 dark:text-slate-400']"
-                        >Expense</button>
-                    </div>
+          </header>
+          
+          <!-- Scrollable Content -->
+          <div class="overflow-y-auto custom-scrollbar flex-1 bg-white">
+            <div class="p-6 space-y-8">
+              <!-- Toggle -->
+              <div class="flex justify-center">
+                <div class="inline-flex h-12 items-center justify-center rounded-xl border-2 border-foreground bg-secondary/10 p-1 w-full max-w-sm pop-shadow-sm">
+                  <button 
+                    @click="transactionType = 'income'" 
+                    :class="['flex h-full grow items-center justify-center rounded-lg px-4 transition-all font-extrabold uppercase tracking-widest text-sm border-2 border-transparent', transactionType === 'income' ? 'bg-quaternary border-foreground text-foreground pop-shadow-sm' : 'text-mutedForeground hover:text-foreground']"
+                  >Income</button>
+                  <button 
+                    @click="transactionType = 'expense'" 
+                    :class="['flex h-full grow items-center justify-center rounded-lg px-4 transition-all font-extrabold uppercase tracking-widest text-sm border-2 border-transparent', transactionType === 'expense' ? 'bg-accent border-foreground text-white pop-shadow-sm' : 'text-mutedForeground hover:text-foreground']"
+                  >Expense</button>
+                </div>
+              </div>
+              
+              <!-- Amount Input -->
+              <div class="flex flex-col items-center gap-2">
+                <label class="text-foreground text-sm font-extrabold uppercase tracking-wider">Amount</label>
+                <div class="relative w-full max-w-sm">
+                  <div class="absolute inset-y-0 left-0 pl-1 flex items-center pointer-events-none">
+                    <span class="text-foreground text-3xl font-extrabold">Rp</span>
+                  </div>
+                  <input :value="displayAmount" @input="handleAmountInput" inputmode="numeric" class="block w-full pl-14 pr-4 py-4 text-center text-5xl font-extrabold text-foreground bg-transparent border-b-4 border-foreground focus:border-accent focus:ring-0 placeholder-muted transition-colors tracking-tighter" placeholder="0" type="text"/>
+                </div>
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Category Selection -->
+                <div class="space-y-4">
+                  <h3 class="text-foreground text-sm font-extrabold uppercase tracking-wider">Category</h3>
+                  <div class="space-y-3 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
+                    <label v-for="cat in availableCategories" :key="cat.id" class="group flex items-center gap-3 p-3 rounded-xl border-2 border-foreground cursor-pointer hover:bg-secondary/10 transition-all pop-shadow-sm" :class="selectedCategoryId === cat.id ? 'bg-quaternary' : 'bg-white'">
+                      <input v-model="selectedCategoryId" :value="cat.id" class="peer sr-only" name="category" type="radio"/>
+                      <div :class="['flex size-10 items-center justify-center rounded-full border-2 border-foreground transition-colors shrink-0', selectedCategoryId === cat.id ? 'bg-accent text-white' : 'bg-muted text-foreground']">
+                        <span class="material-symbols-outlined">{{ cat.icon }}</span>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-foreground font-extrabold text-sm truncate">{{ cat.name }}</p>
+                        <p class="text-mutedForeground font-bold text-xs truncate">{{ cat.description }}</p>
+                      </div>
+                      <div :class="['size-6 rounded-full border-2 flex items-center justify-center shrink-0', selectedCategoryId === cat.id ? 'border-foreground bg-accent' : 'border-foreground bg-white']">
+                        <span v-if="selectedCategoryId === cat.id" class="material-symbols-outlined text-white text-[16px]">check</span>
+                      </div>
+                    </label>
+                  </div>
                 </div>
                 
-                    <!-- Amount Input -->
-                <div class="flex flex-col items-center gap-2">
-                    <label class="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wide">Amount</label>
-                    <div class="relative w-full max-w-sm">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <span class="text-slate-400 text-3xl font-bold">Rp</span>
-                        </div>
-                        <input :value="displayAmount" @input="handleAmountInput" inputmode="numeric" class="block w-full pl-14 pr-4 py-4 text-center text-4xl font-bold text-slate-900 dark:text-white bg-transparent border-b-2 border-slate-200 dark:border-slate-700 focus:border-primary focus:ring-0 placeholder-slate-200 dark:placeholder-slate-700 transition-colors" placeholder="0" type="text"/>
+                <!-- Date & Notes -->
+                <div class="space-y-6">
+                  <!-- Date Picker -->
+                  <div class="space-y-3">
+                    <h3 class="text-foreground text-sm font-extrabold uppercase tracking-wider">Date</h3>
+                    <input v-model="transactionDate" type="date" class="w-full rounded-xl border-2 border-foreground bg-white px-4 py-3 text-sm font-bold text-foreground focus:border-accent focus:ring-0 pop-shadow-sm"/>
+                  </div>
+                  
+                  <!-- Notes Field -->
+                  <div class="space-y-3">
+                    <label class="text-foreground text-sm font-extrabold uppercase tracking-wider" for="notes">Notes</label>
+                    <div class="relative">
+                      <textarea v-model="notes" class="w-full rounded-xl border-2 border-foreground bg-white px-4 py-3 text-sm font-bold text-foreground placeholder-mutedForeground focus:border-accent focus:ring-0 resize-none pop-shadow-sm" id="notes" placeholder="Add a note..." rows="4"></textarea>
                     </div>
+                  </div>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Category Selection -->
-                    <div class="space-y-3">
-                        <h3 class="text-slate-900 dark:text-white text-sm font-bold uppercase tracking-wider">Category</h3>
-                        <div class="space-y-2 max-h-[320px] overflow-y-auto pr-2">
-                            <label v-for="cat in availableCategories" :key="cat.id" class="group flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-all" :class="selectedCategoryId === cat.id ? 'border-primary bg-blue-50/50 dark:bg-blue-900/20' : ''">
-                                <input v-model="selectedCategoryId" :value="cat.id" class="peer sr-only" name="category" type="radio"/>
-                                <div :class="['flex size-10 items-center justify-center rounded-lg transition-colors', selectedCategoryId === cat.id ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300']">
-                                    <span class="material-symbols-outlined">{{ cat.icon }}</span>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-slate-900 dark:text-white font-semibold text-sm">{{ cat.name }}</p>
-                                    <p class="text-slate-500 dark:text-slate-400 text-xs">{{ cat.description }}</p>
-                                </div>
-                                <div :class="['size-5 rounded-full border-2 flex items-center justify-center', selectedCategoryId === cat.id ? 'border-primary bg-primary' : 'border-slate-300 dark:border-slate-600']">
-                                    <span v-if="selectedCategoryId === cat.id" class="material-symbols-outlined text-white text-[14px]">check</span>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <!-- Date & Notes -->
-                    <div class="space-y-6">
-                        <!-- Date Picker -->
-                        <div class="space-y-3">
-                            <h3 class="text-slate-900 dark:text-white text-sm font-bold uppercase tracking-wider">Date</h3>
-                            <input v-model="transactionDate" type="date" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 px-4 py-3 text-sm text-slate-900 dark:text-white focus:border-primary focus:ring-1 focus:ring-primary"/>
-                        </div>
-                        
-                        <!-- Notes Field -->
-                        <div class="space-y-3">
-                            <label class="text-slate-900 dark:text-white text-sm font-bold uppercase tracking-wider" for="notes">Notes</label>
-                            <div class="relative">
-                                <textarea v-model="notes" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:border-primary focus:ring-1 focus:ring-primary resize-none" id="notes" placeholder="Add a note..." rows="3"></textarea>
-                                <span class="material-symbols-outlined absolute right-3 bottom-3 text-slate-400 text-[18px]">edit_note</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+              </div>
             </div>
-        </div>
-        
-        <!-- Footer / Action Button -->
-        <footer class="p-6 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
-            <button @click="handleSubmit" :disabled="isSaving || !rawAmount || !selectedCategoryId" class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-bold rounded-lg shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed">
-                <span class="material-symbols-outlined" :class="isSaving ? 'animate-spin' : 'group-hover:animate-pulse'">{{ isSaving ? 'sync' : 'check_circle' }}</span>
-                {{ isSaving ? 'Saving...' : (isEditing ? 'Save Changes' : 'Save Transaction') }}
-            </button>
-        </footer>
+          </div>
+          
+          <!-- Footer / Action Button -->
+          <footer class="p-6 border-t-2 border-foreground bg-white shrink-0">
+            <PgButton @click="handleSubmit" :disabled="isSaving || !rawAmount || !selectedCategoryId" class="w-full justify-center">
+              <span v-if="isSaving" class="material-symbols-outlined animate-spin mr-2">sync</span>
+              <span v-else class="material-symbols-outlined mr-2">check_circle</span>
+              {{ isSaving ? 'Saving...' : (isEditing ? 'Save Changes' : 'Save Transaction') }}
+            </PgButton>
+          </footer>
+
+        </PgCard>
       </div>
     </div>
   </Teleport>
@@ -213,16 +222,17 @@ async function handleSubmit() {
 
 <style scoped>
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(156, 163, 175, 0.5);
-  border-radius: 20px;
+  background-color: var(--color-foreground);
+  border-radius: 4px;
+  border: 2px solid white;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(107, 114, 128, 0.8);
+  background-color: var(--color-accent);
 }
 </style>
