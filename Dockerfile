@@ -19,7 +19,7 @@ RUN npm run build
 FROM nginx:alpine
 
 # Timpa konfigurasi bawaan Nginx dengan `nginx.conf` kita
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Ambil folder hasil build statis (/app/dist) dari Tahap 1
 COPY --from=builder /app/dist /usr/share/nginx/html
