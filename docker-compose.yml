@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   nginx:
-    image: nginx:stable-alpine
+    build: .
     container_name: nginxx
     restart: unless-stopped
     ports:
