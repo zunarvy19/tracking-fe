@@ -1,10 +1,25 @@
+version: "3.8"
+
 services:
+  nginx:
+    image: nginx:stable-alpine
+    container_name: nginxx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - tflow-web
+    networks:
+      - shared_pg_network
+
   tflow-web:
     build: .
     container_name: tflow_fe
     restart: unless-stopped
     ports:
-      - "9696:80"
+      - "80"
     networks:
       - shared_pg_network
 
