@@ -1,15 +1,16 @@
-version: "3.8"
-
 services:
   tflow-web:
     build: .
     container_name: tflow_fe
     restart: unless-stopped
     expose:
-      - "9000"
+      - "PORT_APP_LU"
     networks:
       - shared_pg_network
+      - shared_net
 
 networks:
   shared_pg_network:
+    external: true
+  shared_net:
     external: true
