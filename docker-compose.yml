@@ -1,41 +1,12 @@
 version: "3.8"
 
 services:
-  nginx:
-    image: nginx:alpine
-    container_name: nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/conf:/etc/nginx/conf.d
-      - ./nginx/www:/var/www/certbot
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-    depends_on:
-      - tflow-web
-    networks:
-      - shared_pg_network
-
-  certbot:
-    image: certbot/certbot
-    container_name: certbot
-    volumes:
-      - /etc/letsencrypt:/etc/letsencrypt
-      - ./nginx/www:/var/www/certbot
-    entrypoint: >
-      sh -c "trap exit TERM;
-      while :; do
-        certbot renew --webroot -w /var/www/certbot;
-        sleep 12h & wait $${!};
-      done"
-    networks:
-      - shared_pg_network
-
   tflow-web:
     build: .
     container_name: tflow_fe
     restart: unless-stopped
+    expose:
+      - "9000"
     networks:
       - shared_pg_network
 
