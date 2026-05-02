@@ -4,7 +4,7 @@ services:
     container_name: tflow_fe
     restart: unless-stopped
     expose:
-      - "PORT_APP_LU"
+      - "9000"
     networks:
       - shared_pg_network
       - shared_net
